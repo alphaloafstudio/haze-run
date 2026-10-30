@@ -107,6 +107,10 @@ body{font-family:var(--body)}
   .air .row{letter-spacing:.06em}
   .chips{grid-column:2 / -1;grid-row:3;justify-self:end}
   .where{letter-spacing:.03em}
+  /* pop-ups go to the left under the distance block (same idea as sideways phones), clear of the chips on the right */
+  .pop{left:max(14px,env(safe-area-inset-left,0px));right:auto;top:calc(88px + env(safe-area-inset-top,0px));text-align:left;padding-inline:0;max-width:calc(100% - 170px);transform-origin:left top}
+  .pop b{font-size:clamp(20px,5.6vw,26px);text-shadow:0 2px 0 #a5621f,0 0 12px rgba(0,0,0,.35)}
+  .pop span{font-size:11px}
 }
 /* Short landscape screens (phones on their side): keep pop-ups and the news ticker out of the road ahead */
 @media (orientation:landscape) and (max-height:560px){
