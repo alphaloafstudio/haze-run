@@ -192,7 +192,7 @@ const GLASS=[[118,148,168],[92,122,142],[168,178,186],[132,160,150]];
 const SHIRTS=[[220,70,70],[70,120,200],[240,200,80],[90,170,120],[240,240,236],[150,90,170],[240,140,170],[60,60,70]];
 
 function resetWorld(){
-  dist=0; speed=12; air=100; bubbles=0; maskT=0; peakPsi=40; t=0;
+  dist=0; speed=13.5; air=100; bubbles=0; maskT=0; peakPsi=40; t=0;
   points=0; shield=false; boostT=0; invT=0; rainT=0; nextRainT=rnd(35,50); dodged=0; grpGot={}; lastShiok=-9;
   obs=[]; pick_=[]; scen=[]; nextRow=45; nextScen=[-6,-2]; nextErp=ZONE_LEN+60; mallNext=rnd(140,220); mallSide=Math.random()<.5?0:1;
   nextLink=-6; nextSign=rnd(20,40); jetT=0; nextJet=0; lastBojio=-9; lowWarn=false; blastT=0; blastN=0;
@@ -287,8 +287,8 @@ function makeRow(d){
     return 4;
   }
   const lanes=[-1,0,1].sort(()=>Math.random()-.5);
-  let n=Math.random()<.28+prog*.4?2:1;
-  if(dist>200 && Math.random()<.1+prog*.12) n=3;
+  let n=Math.random()<.36+prog*.4?2:1;
+  if(dist>150 && Math.random()<.13+prog*.14) n=3;
   const blocked=lanes.slice(0,n), free=lanes.slice(n);
   const allCat = n===3 ? pick(['jump','slide']) : null;
   for(const l of blocked){
@@ -423,7 +423,7 @@ function checkCollisions(){
 function update(dt){
   t+=dt;
   if(state==='play'){
-    speed=Math.min(30,12+dist*0.0075);
+    speed=Math.min(32,13.5+dist*0.0095);
     const eff=speed*(blastT>0?1.3:boostT>0?1.45:1);
     dist+=eff*dt;
     points+=eff*dt*(blastT>0||boostT>0?2:1);
@@ -452,7 +452,7 @@ function update(dt){
     if(air<=0){ air=0; crash('breath'); }
 
     // spawn rows + ERP gantries
-    while(nextRow<dist+FAR){ const extra=makeRow(nextRow); nextRow+=0.85*speed+rnd(1,6)+extra; }
+    while(nextRow<dist+FAR){ const extra=makeRow(nextRow); nextRow+=0.74*speed+rnd(1,6)+extra; }
     while(nextErp<dist+FAR){ const k=zoneAt(nextErp).kind; if(k!=='hdb') addOb('erp',0,nextErp,{len:0.6}); nextErp+=rnd(260,380); }
 
     // moving obstacles
@@ -1093,6 +1093,13 @@ function drawBusBody(o,z){
   const sx = x>camX ? x-hw : x+hw;
   sideWall(sx,z,z2,0.25,h,white);
   sideWall(sx,z,z2,0.25,1.2,green);
+  if(camH>h+0.05){ // roof: seen from above on tall (portrait) screens
+    const zm=z+o.len*0.5, roof=[222,225,218];
+    floorQuad(x-hw,x+hw,z,z2,h,fc(roof,zm));
+    floorQuad(x-hw+0.12,x+hw-0.12,z+0.15,z2-0.15,h,fc(shade(roof,0.93),zm));
+    floorQuad(x-0.45,x+0.45,z+0.6,z+1.9,h+0.001,fc([150,156,160],z+1.2));
+    floorQuad(x-0.45,x+0.45,z+2.4,z+3.7,h+0.001,fc([150,156,160],z+3));
+  }
   sideWall(sx,z+0.3,z2-0.3,2.5,3.5,glass);
   sideWall(sx,z+1.2,z2-0.5,1.5,2.2,glass);
   sideWall(sx,z+0.4,z+1.3,0,0.3,[30,30,30]);

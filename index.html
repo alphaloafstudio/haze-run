@@ -93,6 +93,19 @@ body{font-family:var(--body)}
 .best{font-family:var(--mono);font-size:12px;color:var(--muted)}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
 .actions .btn{flex:1}
+
+/* Short landscape screens (phones on their side): keep pop-ups and the news ticker out of the road ahead */
+@media (orientation:landscape) and (max-height:560px){
+  .pop{left:max(14px,env(safe-area-inset-left,0px));right:auto;top:calc(86px + env(safe-area-inset-top,0px));text-align:left;padding-inline:0;max-width:30%}
+  .pop b{font-size:clamp(16px,3.4vw,22px);text-shadow:0 2px 0 #a5621f,0 0 12px rgba(0,0,0,.35)}
+  .pop span{font-size:11px}
+  .banner{left:max(14px,env(safe-area-inset-left,0px));top:auto;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateY(8px);text-align:left;width:auto;max-width:30%;padding-inline:0}
+  .banner.show{transform:none}
+  .banner b{font-size:clamp(18px,3.6vw,26px)}
+  .banner span{font-size:11px}
+  .ticker{justify-content:flex-start;right:auto;max-width:34%;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+  .ticker div{font-size:11px;padding:5px 8px}
+}
 @media (prefers-reduced-motion:reduce){.banner,.pop,.ticker div{transition:none}.bar.low i{animation:none}}
 </style>
 
