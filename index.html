@@ -1,0 +1,176 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Haze Run</title>
+<link rel="stylesheet" href="assets/fonts/fonts.css">
+<style>
+/* Layout: full-bleed canvas game, HUD pinned to top safe area, news ticker at bottom, centred cards for menu / pause / game over. Single committed look (dusky haze). */
+:root{
+  --ink:#17201f;
+  --panel:rgba(23,32,31,.9);
+  --cream:#f4ead6;
+  --muted:#b8ad98;
+  --haze:#f0a24e;
+  --line:rgba(244,234,214,.16);
+  --good:#4fb06f; --mod:#e2c13f; --unh:#ef8a3a; --vunh:#d9483b; --haz:#9b2f63;
+  --display:'Bungee',Impact,'Arial Black',sans-serif;
+  --body:'Figtree',system-ui,-apple-system,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+html,body{height:100%;background:var(--ink);color:var(--cream);overflow:hidden}
+body{font-family:var(--body)}
+#game{position:fixed;inset:0;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+#cv{display:block;width:100%;height:100%}
+
+.hud{position:absolute;left:0;right:0;top:0;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:10px;
+  padding:calc(10px + env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) 0 max(14px,env(safe-area-inset-left,0px));pointer-events:none}
+.dist{font-family:var(--display);font-size:clamp(22px,6vw,34px);line-height:1;color:var(--cream);text-shadow:0 2px 0 rgba(0,0,0,.35);font-variant-numeric:tabular-nums}
+.dist small{font-size:.5em;margin-left:3px}
+.where{margin-top:4px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--cream);opacity:.9;text-shadow:0 1px 2px rgba(0,0,0,.55)}
+.pts{margin-top:2px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--cream);text-shadow:0 1px 2px rgba(0,0,0,.6);font-variant-numeric:tabular-nums}
+.psi{display:flex;flex-direction:column;align-items:center;gap:3px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 10px;min-width:96px}
+.psi .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--muted)}
+.psi .val{font-family:var(--mono);font-weight:700;font-size:22px;line-height:1;font-variant-numeric:tabular-nums}
+.psi .cap{font-size:10px;font-weight:600;letter-spacing:.03em;color:var(--muted);white-space:nowrap}
+.psi .band{font-size:11px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:99px;color:#17201f;white-space:nowrap}
+.right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:0;justify-self:end}
+.toprow{display:flex;gap:8px;align-items:center}
+.air{width:clamp(72px,20vw,150px)}
+.air .row{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--cream);text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.bar{height:10px;border-radius:99px;background:rgba(23,32,31,.75);border:1px solid var(--line);overflow:hidden;margin-top:3px}
+.bar i{display:block;height:100%;width:100%;border-radius:99px;background:var(--good);transition:background .3s}
+.bar.low i{animation:pulse .6s infinite alternate}
+.bar.thin{height:5px;margin-top:3px}
+.bar.thin i{background:#8fe3ff;width:0%}
+.bar.thin.full i{animation:pulse .3s infinite alternate}
+@keyframes pulse{to{opacity:.45}}
+.chips{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;max-width:100%}
+.chip-s{font-family:var(--mono);font-size:11px;border-radius:99px;padding:3px 9px;font-weight:700;color:#17201f;line-height:1.25;text-align:center}
+.c-blast{background:#8fe3ff}.c-mask{background:#e8f7ff}.c-chope{background:#ffd6e4}.c-boost{background:#ffd98a}.c-rain{background:#b9d8ff}
+.pausebtn{pointer-events:auto;width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--cream);font:700 14px var(--mono);cursor:pointer}
+.pausebtn:focus-visible,.btn:focus-visible{outline:3px solid var(--haze);outline-offset:2px}
+
+.banner{position:absolute;left:50%;top:24%;transform:translate(-50%,-10px);text-align:center;opacity:0;transition:opacity .4s,transform .4s;pointer-events:none;padding-inline:16px;width:100%}
+.banner.show{opacity:1;transform:translate(-50%,0)}
+.banner b{display:block;font-family:var(--display);font-size:clamp(28px,8vw,52px);color:var(--cream);text-shadow:0 3px 0 rgba(0,0,0,.35)}
+.banner span{font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--cream);opacity:.9}
+
+.pop{position:absolute;left:0;right:0;top:calc(120px + env(safe-area-inset-top,0px));text-align:center;opacity:0;transform:scale(.85);transition:opacity .16s,transform .16s;pointer-events:none;padding-inline:16px}
+.pop.show{opacity:1;transform:scale(1)}
+.pop b{display:block;font-family:var(--display);font-size:clamp(22px,6vw,34px);line-height:1;color:#fff3d6;text-shadow:0 3px 0 #a5621f,0 0 20px rgba(0,0,0,.35)}
+.pop span{display:block;margin-top:4px;font-weight:800;font-size:12px;color:var(--cream);text-shadow:0 1px 3px rgba(0,0,0,.7)}
+
+.ticker{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:center;pointer-events:none;
+  padding:0 max(14px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
+.ticker div{display:flex;gap:8px;align-items:baseline;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:7px 11px;max-width:560px;font-size:13px;line-height:1.35;transition:opacity .35s;min-width:0}
+.ticker b{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--haze);white-space:nowrap}
+
+.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  background:linear-gradient(180deg,rgba(23,32,31,.15),rgba(23,32,31,.55))}
+.card{width:min(460px,100%);max-height:100%;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px 20px;display:flex;flex-direction:column;gap:14px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.title{font-family:var(--display);font-size:clamp(40px,12vw,58px);line-height:.92;color:var(--haze);text-wrap:balance}
+.title sup{font-size:.36em;color:var(--cream);vertical-align:top;margin-left:4px;letter-spacing:.05em}
+.lede{color:var(--cream);font-size:15px;line-height:1.45;margin:0;max-width:60ch}
+.legend{display:flex;flex-direction:column;gap:7px}
+.grp{border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
+.grp b{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--haze);margin-bottom:2px}
+.grp span{font-size:13px;line-height:1.4;color:var(--cream)}
+.grp.good{border-color:rgba(140,220,255,.35)}
+.grp.good b{color:#9fe0ff}
+.grp span{display:block}
+.grp i{font-style:normal;font-weight:800;color:var(--muted);font-size:11px;letter-spacing:.06em;text-transform:uppercase;margin-right:4px}
+.how{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.btn{appearance:none;border:0;border-radius:12px;padding:14px 18px;font:800 16px var(--body);background:var(--haze);color:#1d1408;cursor:pointer;box-shadow:0 4px 0 #a5621f}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 #a5621f}
+.btn.ghost{background:transparent;color:var(--cream);border:1px solid var(--line);box-shadow:none}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center;min-width:0}
+.stat b{display:block;font-family:var(--mono);font-size:20px;font-variant-numeric:tabular-nums}
+.stat span{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.cause{font-family:var(--display);font-size:clamp(22px,6vw,30px);line-height:1.05;color:var(--haze);text-wrap:balance}
+.quip{margin:0;font-size:15px;line-height:1.45}
+.best{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.actions .btn{flex:1}
+@media (prefers-reduced-motion:reduce){.banner,.pop,.ticker div{transition:none}.bar.low i{animation:none}}
+</style>
+
+<div id="game">
+  <canvas id="cv" aria-label="Haze Run game view"></canvas>
+
+  <div class="hud" id="hud" hidden>
+    <div>
+      <div class="dist" id="hDist">0<small>m</small></div>
+      <div class="where" id="hZone">Toa Payoh</div>
+      <div class="pts" id="hPts">0 pts</div>
+    </div>
+    <div class="psi">
+      <div class="lbl">24-HR PSI</div>
+      <div class="val" id="hPsi">40</div>
+      <div class="band" id="hBand">Good</div>
+      <div class="cap">air quality · rising</div>
+    </div>
+    <div class="right">
+      <div class="toprow">
+        <div class="air">
+          <div class="row"><span>AIR</span><span id="hBub">0 ◯</span></div>
+          <div class="bar" id="hBarWrap"><i id="hBar"></i></div>
+          <div class="bar thin" id="hBlastWrap" title="Fresh air blast"><i id="hBlast"></i></div>
+        </div>
+        <button class="pausebtn" id="pauseBtn" aria-label="Pause">II</button>
+      </div>
+      <div class="chips">
+        <span class="chip-s c-blast" id="hBlastChip" hidden>BLAST 5s</span>
+        <span class="chip-s c-mask" id="hMask" hidden>N95 8s</span>
+        <span class="chip-s c-chope" id="hChope" hidden>CHOPED</span>
+        <span class="chip-s c-boost" id="hBoost" hidden>KAYA 3s</span>
+        <span class="chip-s c-rain" id="hRain" hidden>RAIN</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="banner" id="banner"><b id="bName">Chinatown</b><span id="bSub">Shophouse row</span></div>
+  <div class="pop" id="pop"><b id="popMain">Shiok!</b><span id="popSub"></span></div>
+  <div class="ticker" id="ticker" hidden><div id="tickBox"><b>HAZE NEWS</b><span id="tickTxt"></span></div></div>
+
+  <div class="overlay" id="menu">
+    <div class="card">
+      <div class="title">HAZE RUN</div>
+      <p class="lede">The PSI is climbing. Run from Toa Payoh through Chinatown to Marina Bay, grab fresh air, and dodge everything on the way.</p>
+      <div class="how">Phone: swipe ← → ↑ ↓ &nbsp;·&nbsp; Desktop: arrow keys or WASD</div>
+      <button class="btn" id="startBtn">Start running</button>
+      <div class="best" id="menuBest"></div>
+    </div>
+  </div>
+
+  <div class="overlay" id="paused" hidden>
+    <div class="card">
+      <div class="cause">Paused</div>
+      <p class="quip">Catch your breath. The haze will wait.</p>
+      <div class="actions">
+        <button class="btn" id="resumeBtn">Resume</button>
+        <button class="btn ghost" id="quitBtn">Quit run</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="over" hidden>
+    <div class="card">
+      <div class="cause" id="oCause">Out of breath.</div>
+      <p class="quip" id="oQuip"></p>
+      <div class="stats">
+        <div class="stat"><b id="oDist">0</b><span>metres</span></div>
+        <div class="stat"><b id="oPsi">0</b><span>peak PSI</span></div>
+        <div class="stat"><b id="oPts">0</b><span>points</span></div>
+      </div>
+      <div class="best" id="oBest"></div>
+      <button class="btn" id="againBtn">Run again</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/ads.js"></script>
+<script src="js/game.js"></script>
+
+</body></html>
