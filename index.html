@@ -56,7 +56,7 @@ body{font-family:var(--body)}
 .banner b{display:block;font-family:var(--display);font-size:clamp(28px,8vw,52px);color:var(--cream);text-shadow:0 3px 0 rgba(0,0,0,.35)}
 .banner span{font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--cream);opacity:.9}
 
-.pop{position:absolute;left:0;right:0;top:calc(120px + env(safe-area-inset-top,0px));text-align:center;opacity:0;transform:scale(.85);transition:opacity .16s,transform .16s;pointer-events:none;padding-inline:16px}
+.pop{position:absolute;left:0;right:0;top:calc(56px + env(safe-area-inset-top,0px));text-align:center;opacity:0;transform:scale(.85);transition:opacity .16s,transform .16s;pointer-events:none;padding-inline:16px}
 .pop.show{opacity:1;transform:scale(1)}
 .pop b{display:block;font-family:var(--display);font-size:clamp(22px,6vw,34px);line-height:1;color:#fff3d6;text-shadow:0 3px 0 #a5621f,0 0 20px rgba(0,0,0,.35)}
 .pop span{display:block;margin-top:4px;font-weight:800;font-size:12px;color:var(--cream);text-shadow:0 1px 3px rgba(0,0,0,.7)}
@@ -95,12 +95,17 @@ body{font-family:var(--body)}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
 .actions .btn{flex:1}
 
-/* Narrow portrait phones: PSI sits on its own row under the top bar */
+/* Narrow portrait phones: row 1 = distance | PSI | pause, row 2 = air bar, row 3 = power-up chips */
 @media (max-width:480px){
-  .hud{grid-template-columns:minmax(0,1fr) minmax(0,1fr);row-gap:6px}
-  .hl{grid-column:1;grid-row:1}
-  .right{grid-column:2;grid-row:1}
-  .psi{grid-column:1 / -1;grid-row:2}
+  .hud{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);column-gap:8px;row-gap:6px}
+  .hl{grid-column:1;grid-row:1 / span 2}
+  .psi{grid-column:2;grid-row:1;justify-self:center;align-self:start}
+  .right,.toprow{display:contents}
+  .pausebtn{grid-column:3;grid-row:1;justify-self:end;align-self:start}
+  .air{grid-column:2 / -1;grid-row:2;justify-self:end;width:clamp(120px,42vw,170px)}
+  .chips{grid-column:2 / -1;grid-row:3;justify-self:end}
+  .where{letter-spacing:.03em}
+  .pop{top:calc(128px + env(safe-area-inset-top,0px))}
 }
 /* Short landscape screens (phones on their side): keep pop-ups and the news ticker out of the road ahead */
 @media (orientation:landscape) and (max-height:560px){
