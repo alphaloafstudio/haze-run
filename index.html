@@ -28,11 +28,10 @@ body{font-family:var(--body)}
 .dist small{font-size:.5em;margin-left:3px}
 .where{margin-top:4px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--cream);opacity:.9;text-shadow:0 1px 2px rgba(0,0,0,.55)}
 .pts{margin-top:2px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--cream);text-shadow:0 1px 2px rgba(0,0,0,.6);font-variant-numeric:tabular-nums}
-.psi{display:flex;flex-direction:column;align-items:center;gap:3px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 10px;min-width:96px}
-.psi .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--muted)}
-.psi .val{font-family:var(--mono);font-weight:700;font-size:22px;line-height:1;font-variant-numeric:tabular-nums}
-.psi .cap{font-size:10px;font-weight:600;letter-spacing:.03em;color:var(--muted);white-space:nowrap}
-.psi .band{font-size:11px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:99px;color:#17201f;white-space:nowrap}
+.psi{display:flex;align-items:center;gap:7px;background:var(--panel);border:1px solid var(--line);border-radius:99px;padding:5px 6px 5px 11px;justify-self:center;white-space:nowrap}
+.psi .lbl{font-family:var(--display);font-size:12px;letter-spacing:.04em;color:var(--muted)}
+.psi .val{font-family:var(--display);font-size:18px;line-height:1;min-width:2ch;text-align:center;font-variant-numeric:tabular-nums}
+.psi .band{font-size:11px;font-weight:800;letter-spacing:.03em;padding:3px 8px;border-radius:99px;color:#17201f}
 .right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:0;justify-self:end}
 .toprow{display:flex;gap:8px;align-items:center}
 .air{width:clamp(72px,20vw,150px)}
@@ -47,7 +46,9 @@ body{font-family:var(--body)}
 .chips{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;max-width:100%}
 .chip-s{font-family:var(--mono);font-size:11px;border-radius:99px;padding:3px 9px;font-weight:700;color:#17201f;line-height:1.25;text-align:center}
 .c-blast{background:#8fe3ff}.c-mask{background:#e8f7ff}.c-chope{background:#ffd6e4}.c-boost{background:#ffd98a}.c-rain{background:#b9d8ff}
-.pausebtn{pointer-events:auto;width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--cream);font:700 14px var(--mono);cursor:pointer}
+.pausebtn{pointer-events:auto;width:38px;height:38px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--cream);cursor:pointer;display:grid;place-items:center;padding:0}
+.pausebtn svg{display:block}
+.pausebtn:active{transform:translateY(1px)}
 .pausebtn:focus-visible,.btn:focus-visible{outline:3px solid var(--haze);outline-offset:2px}
 
 .banner{position:absolute;left:50%;top:24%;transform:translate(-50%,-10px);text-align:center;opacity:0;transition:opacity .4s,transform .4s;pointer-events:none;padding-inline:16px;width:100%}
@@ -94,6 +95,13 @@ body{font-family:var(--body)}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
 .actions .btn{flex:1}
 
+/* Narrow portrait phones: PSI sits on its own row under the top bar */
+@media (max-width:480px){
+  .hud{grid-template-columns:minmax(0,1fr) minmax(0,1fr);row-gap:6px}
+  .hl{grid-column:1;grid-row:1}
+  .right{grid-column:2;grid-row:1}
+  .psi{grid-column:1 / -1;grid-row:2}
+}
 /* Short landscape screens (phones on their side): keep pop-ups and the news ticker out of the road ahead */
 @media (orientation:landscape) and (max-height:560px){
   .pop{left:max(14px,env(safe-area-inset-left,0px));right:auto;top:calc(86px + env(safe-area-inset-top,0px));text-align:left;padding-inline:0;max-width:30%}
@@ -113,16 +121,15 @@ body{font-family:var(--body)}
   <canvas id="cv" aria-label="Haze Run game view"></canvas>
 
   <div class="hud" id="hud" hidden>
-    <div>
+    <div class="hl">
       <div class="dist" id="hDist">0<small>m</small></div>
       <div class="where" id="hZone">Toa Payoh</div>
       <div class="pts" id="hPts">0 pts</div>
     </div>
-    <div class="psi">
-      <div class="lbl">24-HR PSI</div>
-      <div class="val" id="hPsi">40</div>
-      <div class="band" id="hBand">Good</div>
-      <div class="cap">air quality · rising</div>
+    <div class="psi" title="24-hour PSI">
+      <span class="lbl">PSI</span>
+      <span class="val" id="hPsi">40</span>
+      <span class="band" id="hBand">Good</span>
     </div>
     <div class="right">
       <div class="toprow">
@@ -131,7 +138,7 @@ body{font-family:var(--body)}
           <div class="bar" id="hBarWrap"><i id="hBar"></i></div>
           <div class="bar thin" id="hBlastWrap" title="Fresh air blast"><i id="hBlast"></i></div>
         </div>
-        <button class="pausebtn" id="pauseBtn" aria-label="Pause">II</button>
+        <button class="pausebtn" id="pauseBtn" aria-label="Pause"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="5" y="4" width="5" height="16" rx="1.6" fill="currentColor"/><rect x="14" y="4" width="5" height="16" rx="1.6" fill="currentColor"/></svg></button>
       </div>
       <div class="chips">
         <span class="chip-s c-blast" id="hBlastChip" hidden>BLAST 5s</span>
