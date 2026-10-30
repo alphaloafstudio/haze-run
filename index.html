@@ -95,21 +95,18 @@ body{font-family:var(--body)}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
 .actions .btn{flex:1}
 
-/* Narrow portrait phones: row 1 = distance | PSI | pause, row 2 = full-width air bar, row 3 = power-up chips.
-   Left edges line up (distance, air, chips); right edges line up (pause, air). PSI and pause share one height. */
+/* Narrow portrait phones: row 1 = distance | PSI | pause; the small air bar sits under pause (right edges line up);
+   power-up chips go on a third row. Same look as other screens, only the layout differs. */
 @media (max-width:480px){
-  .hud{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);column-gap:8px;row-gap:8px}
-  .hl{grid-column:1;grid-row:1}
+  .hud{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);column-gap:8px;row-gap:6px}
+  .hl{grid-column:1;grid-row:1 / span 2}
   .psi{grid-column:2;grid-row:1;justify-self:center;align-self:start;min-height:38px;box-sizing:border-box;padding-block:0}
   .right,.toprow{display:contents}
   .pausebtn{grid-column:3;grid-row:1;justify-self:end;align-self:start}
-  .air{grid-column:1 / -1;grid-row:2;width:auto}
-  .air .row{font-size:11px}
-  .bar{height:12px}
-  .bar.thin{height:5px}
-  .chips{grid-column:1 / -1;grid-row:3;justify-self:start;justify-content:flex-start}
+  .air{grid-column:3;grid-row:2;justify-self:end;width:100%;max-width:100px}
+  .air .row{letter-spacing:.06em}
+  .chips{grid-column:2 / -1;grid-row:3;justify-self:end}
   .where{letter-spacing:.03em}
-  .pop{top:calc(164px + env(safe-area-inset-top,0px))}
 }
 /* Short landscape screens (phones on their side): keep pop-ups and the news ticker out of the road ahead */
 @media (orientation:landscape) and (max-height:560px){
