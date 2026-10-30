@@ -334,8 +334,12 @@ addEventListener('pointerup',()=>sw=null); addEventListener('pointercancel',()=>
 let popTimer=0;
 const tipsSeen={};
 function firstTime(k){ try{ if(localStorage.getItem('hazerun-tip-'+k)) return false; localStorage.setItem('hazerun-tip-'+k,'1'); return true; }catch(e){ if(tipsSeen[k]) return false; tipsSeen[k]=1; return true; } }
+// Narrow portrait phones: pop-ups sit just below the HUD stack, and are skipped while the area-name banner is showing
+const narrowMQ=matchMedia('(max-width:480px)');
+function placePop(){ const el=$('pop'); if(narrowMQ.matches) el.style.top=($('hud').getBoundingClientRect().bottom+8)+'px'; else el.style.top=''; }
 function say(main,sub='',ms=1250){
-  const el=$('pop'); $('popMain').textContent=main; $('popSub').textContent=sub;
+  if(narrowMQ.matches && $('banner').classList.contains('show')) return;
+  const el=$('pop'); placePop(); $('popMain').textContent=main; $('popSub').textContent=sub;
   el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
   clearTimeout(popTimer); popTimer=setTimeout(()=>el.classList.remove('show'),ms);
 }
@@ -382,7 +386,7 @@ function updateMenuBest(){ $('menuBest').textContent = best?`Personal best: ${be
 updateMenuBest();
 
 let bannerTimer=0;
-function zoneBanner(z){ $('bName').textContent=z.name; $('bSub').textContent=z.sub; $('banner').classList.add('show'); clearTimeout(bannerTimer); bannerTimer=setTimeout(()=>$('banner').classList.remove('show'),2200); }
+function zoneBanner(z){ if(narrowMQ.matches){ $('pop').classList.remove('show'); clearTimeout(popTimer); } $('bName').textContent=z.name; $('bSub').textContent=z.sub; $('banner').classList.add('show'); clearTimeout(bannerTimer); bannerTimer=setTimeout(()=>$('banner').classList.remove('show'),2200); }
 
 // ---------- collisions ----------
 const auntX=(o,i)=>o.x+Math.sin(t*2.2+o.ph+i*0.6)*1.0;
@@ -1331,6 +1335,7 @@ function frame(now){
   const dt=Math.min(0.05,(now-last)/1000); last=now;
   try{ if(state!=='paused') update(dt); }catch(e){ console.error(e); }
   try{ render(); }catch(e){ console.error(e); ctx.restore(); }
+  if(narrowMQ.matches && $('pop').classList.contains('show')) placePop();
 }
 resetWorld(); psiNow=130; HAZE=hazeFor(130); vis=80;
 genScenery(dist-PZ);
